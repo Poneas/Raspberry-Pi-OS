@@ -1,21 +1,14 @@
 #include "uart.h"
-
+#include "shell.h"
 void kernel_main(void)
 {
     uart_puts("\r\n");
     uart_puts("============================\r\n");
     uart_puts(" Raspberry-Pi-OS Kernel\r\n");
     uart_puts("============================\r\n");
-    uart_puts("Type something:\r\n");
-    uart_puts("> ");
-
+    uart_puts("ARM64 kernel initialized.\r\n");
+    shell_run();
     while (1) {
-        char c = uart_getc();
-
-        uart_putc(c);
-
-        if (c == '\r') {
-            uart_puts("\n> ");
-        }
+        __asm__ volatile("wfe");
     }
 }

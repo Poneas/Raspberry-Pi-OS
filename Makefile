@@ -17,7 +17,8 @@ BUILD = build
 OBJS = \
 	$(BUILD)/boot.o \
 	$(BUILD)/main.o \
-	$(BUILD)/uart.o
+	$(BUILD)/shell.o \
+        $(BUILD)/uart.o 
 
 all: $(BUILD)/kernel.elf
 
@@ -28,6 +29,9 @@ $(BUILD)/boot.o: arch/arm64/boot.S | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD)/main.o: kernel/main.c | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD)/shell.o: kernel/shell.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD)/uart.o: drivers/uart.c | $(BUILD)
