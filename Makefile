@@ -20,7 +20,10 @@ OBJS = \
 	$(BUILD)/main.o \
 	$(BUILD)/shell.o \
         $(BUILD)/exception.o\
-        $(BUILD)/uart.o 
+        $(BUILD)/irq.o\
+        $(BUILD)/uart.o\
+        $(BUILD)/gic.o\
+        $(BUILD)/timer.o
 
 all: $(BUILD)/kernel.elf
 
@@ -39,10 +42,15 @@ $(BUILD)/shell.o: kernel/shell.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/exception.o: kernel/exception.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
-
+$(BUILD)/irq.o: kernel/irq.c | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/uart.o: drivers/uart.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/gic.o: drivers/gic.c | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
 
+$(BUILD)/timer.o: drivers/timer.c | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/kernel.elf: $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) -o $@
 

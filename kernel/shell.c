@@ -1,6 +1,6 @@
 #include "uart.h"
 #include "shell.h"
-
+#include "timer.h"
 #define CMD_BUFFER_SIZE 64
 
 static int str_equal(const char *a, const char *b)
@@ -25,6 +25,7 @@ static void execute_command(const char *command)
             "  info  - Show kernel information\r\n"
             "  clear - Clear the terminal\r\n"
             "  exc   - Trigger test exception\r\n"
+            "  uptime - Show system uptime\r\n"
         );
     }
     else if (str_equal(command, "info")) {
@@ -41,6 +42,30 @@ static void execute_command(const char *command)
     uart_puts("Triggering test exception...\r\n");
 
     __asm__ volatile("brk #0");
+    }
+    else if (str_equal(command, "uptime")) {
+    unsigned long seconds = timer_get_seconds();
+
+    uart_puts("Uptime: ");
+
+    if (seconds == 0) {
+        uart_putc('0');
+    }
+    else {
+        char buffer[21];
+        int i = 0;
+
+        while (seconds > 0) {
+            buffer[i++] = '0' + (seconds % 10);
+            seconds /= 10;
+        }
+
+        while (i > 0) {
+            uart_putc(buffer[--i]);
+        }
+    }
+
+    uart_puts(" seconds\r\n");
     }
     else if (command[0] != '\0') {
         uart_puts("Unknown command: ");
