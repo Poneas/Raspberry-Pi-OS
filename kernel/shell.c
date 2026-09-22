@@ -24,6 +24,7 @@ static void execute_command(const char *command)
             "  help  - Show available commands\r\n"
             "  info  - Show kernel information\r\n"
             "  clear - Clear the terminal\r\n"
+            "  exc   - Trigger test exception\r\n"
         );
     }
     else if (str_equal(command, "info")) {
@@ -35,6 +36,11 @@ static void execute_command(const char *command)
     }
     else if (str_equal(command, "clear")) {
         uart_puts("\033[2J\033[H");
+    }
+    else if (str_equal(command, "exc")) {
+    uart_puts("Triggering test exception...\r\n");
+
+    __asm__ volatile("brk #0");
     }
     else if (command[0] != '\0') {
         uart_puts("Unknown command: ");

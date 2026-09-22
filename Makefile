@@ -16,8 +16,10 @@ BUILD = build
 
 OBJS = \
 	$(BUILD)/boot.o \
+        $(BUILD)/exception_asm.o\
 	$(BUILD)/main.o \
 	$(BUILD)/shell.o \
+        $(BUILD)/exception.o\
         $(BUILD)/uart.o 
 
 all: $(BUILD)/kernel.elf
@@ -27,11 +29,15 @@ $(BUILD):
 
 $(BUILD)/boot.o: arch/arm64/boot.S | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/exception_asm.o: arch/arm64/exception.S | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD)/main.o: kernel/main.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD)/shell.o: kernel/shell.c | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/exception.o: kernel/exception.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD)/uart.o: drivers/uart.c | $(BUILD)
