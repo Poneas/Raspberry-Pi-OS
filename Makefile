@@ -8,6 +8,7 @@ CFLAGS = -Wall -Wextra -O2 \
 	-fno-pie \
 	-nostdlib \
 	-nostartfiles \
+        -mgeneral-regs-only\
 	-Iinclude
 
 LDFLAGS = -T linker.ld
@@ -23,7 +24,9 @@ OBJS = \
         $(BUILD)/irq.o\
         $(BUILD)/uart.o\
         $(BUILD)/gic.o\
-        $(BUILD)/timer.o
+        $(BUILD)/timer.o \
+        $(BUILD)/memory.o 
+
 
 all: $(BUILD)/kernel.elf
 
@@ -50,6 +53,8 @@ $(BUILD)/gic.o: drivers/gic.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD)/timer.o: drivers/timer.c | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/memory.o: kernel/memory.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/kernel.elf: $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) -o $@

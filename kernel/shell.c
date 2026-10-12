@@ -1,6 +1,7 @@
 #include "uart.h"
 #include "shell.h"
 #include "timer.h"
+#include "memory.h"
 #define CMD_BUFFER_SIZE 64
 
 static int str_equal(const char *a, const char *b)
@@ -15,7 +16,25 @@ static int str_equal(const char *a, const char *b)
 
     return (*a == '\0' && *b == '\0');
 }
+static void uart_put_uint(unsigned long value)
+{
+    char buffer[21];
+    int i = 0;
 
+    if (value == 0) {
+        uart_putc('0');
+        return;
+    }
+
+    while (value > 0) {
+        buffer[i++] = '0' + (value % 10);
+        value /= 10;
+    }
+
+    while (i > 0) {
+        uart_putc(buffer[--i]);
+    }
+}
 static void execute_command(const char *command)
 {
     if (str_equal(command, "help")) {
@@ -26,6 +45,8 @@ static void execute_command(const char *command)
             "  clear - Clear the terminal\r\n"
             "  exc   - Trigger test exception\r\n"
             "  uptime - Show system uptime\r\n"
+            "  mem    - Show memory information\r\n"
+            "  alloc  - Allocate one 4 KB page\r\n"
         );
     }
     else if (str_equal(command, "info")) {
@@ -67,6 +88,33 @@ static void execute_command(const char *command)
 
     uart_puts(" seconds\r\n");
     }
+else if (str_equal(command, "mem")) {
+    uart_puts("Memory pages:\r\n");
+
+    uart_puts("  Total: ");
+    uart_put_uint(memory_total_pages());
+    uart_puts("\r\n");
+
+    uart_puts("  Used : ");
+    uart_put_uint(memory_used_pages());
+    uart_puts("\r\n");
+
+    uart_puts("  Free : ");
+    uart_put_uint(memory_free_pages());
+    uart_puts("\r\n");
+
+    uart_puts("  Page size: 4096 bytes\r\n");
+}
+else if (str_equal(command, "alloc")) {
+    void *page = page_alloc();
+
+    if (page == 0) {
+        uart_puts("Allocation failed.\r\n");
+    }
+    else {
+        uart_puts("Allocated one 4 KB page.\r\n");
+    }
+}
     else if (command[0] != '\0') {
         uart_puts("Unknown command: ");
         uart_puts(command);

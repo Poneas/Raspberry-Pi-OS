@@ -3,6 +3,7 @@
 #include "exception.h"
 #include "gic.h"
 #include "timer.h"
+#include "memory.h"
 void kernel_main(void)
 {
     uart_puts("\r\n");
@@ -16,6 +17,8 @@ void kernel_main(void)
     uart_puts("GIC initialized.\r\n");
     timer_init();
     uart_puts("Timer initialized.\r\n");
+    memory_init();
+    uart_puts("memory manager initialized.\r\n");
     __asm__ volatile("msr daifclr, #2");
     uart_puts("Interrupts enabled.\r\n");
     shell_run();
