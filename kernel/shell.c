@@ -2,8 +2,9 @@
 #include "shell.h"
 #include "timer.h"
 #include "memory.h"
+#include "heap.h"
 #define CMD_BUFFER_SIZE 64
-
+static void *last_heap_allocation = 0;
 static int str_equal(const char *a, const char *b)
 {
     while (*a && *b) {
@@ -47,7 +48,10 @@ static void execute_command(const char *command)
             "  uptime - Show system uptime\r\n"
             "  mem    - Show memory information\r\n"
             "  alloc  - Allocate one 4 KB page\r\n"
-        );
+            "  heap   - Show kernel heap information\r\n"
+            "  kalloc - Allocate 64 bytes from kernel heap\r\n"
+            "  kfree  - Free last kernel heap allocation\r\n"    
+     );
     }
     else if (str_equal(command, "info")) {
         uart_puts(
@@ -113,6 +117,53 @@ else if (str_equal(command, "alloc")) {
     }
     else {
         uart_puts("Allocated one 4 KB page.\r\n");
+    }
+}else if (str_equal(command, "heap")) {
+    unsigned long total = heap_total_bytes();
+    unsigned long free = heap_free_bytes();
+
+    uart_puts("Kernel heap:\r\n");
+
+    uart_puts("  Total: ");
+    uart_put_uint(total);
+    uart_puts(" bytes\r\n");
+
+    uart_puts("  Used : ");
+    uart_put_uint(total - free);
+    uart_puts(" bytes\r\n");
+
+    uart_puts("  Free : ");
+    uart_put_uint(free);
+    uart_puts(" bytes\r\n");
+}
+else if (str_equal(command, "kalloc")) {
+    if (last_heap_allocation != 0) {
+        uart_puts(
+            "Free the previous test allocation first.\r\n"
+        );
+    }
+    else {
+        last_heap_allocation = kmalloc(64);
+
+        if (last_heap_allocation == 0) {
+            uart_puts("Kernel heap allocation failed.\r\n");
+        }
+        else {
+            uart_puts(
+                "Allocated 64 bytes from kernel heap.\r\n"
+            );
+        }
+    }
+}
+else if (str_equal(command, "kfree")) {
+    if (last_heap_allocation == 0) {
+        uart_puts("No test allocation to free.\r\n");
+    }
+    else {
+        kfree(last_heap_allocation);
+        last_heap_allocation = 0;
+
+        uart_puts("Kernel heap allocation freed.\r\n");
     }
 }
     else if (command[0] != '\0') {

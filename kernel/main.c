@@ -4,6 +4,7 @@
 #include "gic.h"
 #include "timer.h"
 #include "memory.h"
+#include "heap.h"
 void kernel_main(void)
 {
     uart_puts("\r\n");
@@ -19,6 +20,12 @@ void kernel_main(void)
     uart_puts("Timer initialized.\r\n");
     memory_init();
     uart_puts("memory manager initialized.\r\n");
+    heap_init(
+    memory_heap_start(),
+    memory_heap_end()
+);
+
+uart_puts("Kernel heap initialized.\r\n");
     __asm__ volatile("msr daifclr, #2");
     uart_puts("Interrupts enabled.\r\n");
     shell_run();

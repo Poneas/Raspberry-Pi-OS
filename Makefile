@@ -25,7 +25,8 @@ OBJS = \
         $(BUILD)/uart.o\
         $(BUILD)/gic.o\
         $(BUILD)/timer.o \
-        $(BUILD)/memory.o 
+        $(BUILD)/memory.o\
+        $(BUILD)/heap.o 
 
 
 all: $(BUILD)/kernel.elf
@@ -55,6 +56,8 @@ $(BUILD)/gic.o: drivers/gic.c | $(BUILD)
 $(BUILD)/timer.o: drivers/timer.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/memory.o: kernel/memory.c | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/heap.o: kernel/heap.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/kernel.elf: $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) -o $@
