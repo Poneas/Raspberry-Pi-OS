@@ -1,5 +1,6 @@
 #include "uart.h"
 #include "shell.h"
+#include "scheduler.h"
 #include "timer.h"
 #include "memory.h"
 #include "heap.h"
@@ -36,6 +37,35 @@ static void uart_put_uint(unsigned long value)
         uart_putc(buffer[--i]);
     }
 }
+static void task_a(void)
+{
+    unsigned long last_tick = timer_get_ticks();
+
+    while (1) {
+        if (timer_get_ticks() - last_tick >= 50) {
+            uart_puts("[TASK A]\r\n");
+
+            last_tick = timer_get_ticks();
+
+            scheduler_yield();
+        }
+    }
+}
+
+static void task_b(void)
+{
+    unsigned long last_tick = timer_get_ticks();
+
+    while (1) {
+        if (timer_get_ticks() - last_tick >= 50) {
+            uart_puts("[TASK B]\r\n");
+
+            last_tick = timer_get_ticks();
+
+            scheduler_yield();
+        }
+    }
+}
 static void execute_command(const char *command)
 {
     if (str_equal(command, "help")) {
@@ -49,8 +79,9 @@ static void execute_command(const char *command)
             "  mem    - Show memory information\r\n"
             "  alloc  - Allocate one 4 KB page\r\n"
             "  heap   - Show kernel heap information\r\n"
-            "  kalloc - Allocate 64 bytes from kernel heap\r\n"
-            "  kfree  - Free last kernel heap allocation\r\n"    
+      	    "  kalloc - Allocate 64 bytes from kernel heap\r\n"
+            "  kfree  - Free last kernel heap allocation\r\n"
+            "  sched  - Start scheduler test\r\n"    
      );
     }
     else if (str_equal(command, "info")) {
@@ -165,6 +196,21 @@ else if (str_equal(command, "kfree")) {
 
         uart_puts("Kernel heap allocation freed.\r\n");
     }
+}
+else if (str_equal(command, "sched")) {
+    uart_puts("Creating kernel tasks...\r\n");
+
+    int task_a_id = task_create(task_a);
+    int task_b_id = task_create(task_b);
+
+    if (task_a_id < 0 || task_b_id < 0) {
+        uart_puts("Failed to create tasks.\r\n");
+        return;
+    }
+
+    uart_puts("Starting cooperative scheduler...\r\n");
+
+    scheduler_start();
 }
     else if (command[0] != '\0') {
         uart_puts("Unknown command: ");

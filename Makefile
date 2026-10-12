@@ -26,7 +26,9 @@ OBJS = \
         $(BUILD)/gic.o\
         $(BUILD)/timer.o \
         $(BUILD)/memory.o\
-        $(BUILD)/heap.o 
+        $(BUILD)/heap.o\
+        $(BUILD)/context_switch.o \
+        $(BUILD)/scheduler.o  
 
 
 all: $(BUILD)/kernel.elf
@@ -58,6 +60,11 @@ $(BUILD)/timer.o: drivers/timer.c | $(BUILD)
 $(BUILD)/memory.o: kernel/memory.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/heap.o: kernel/heap.c | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD)/context_switch.o: arch/arm64/context_switch.S | $(BUILD)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD)/scheduler.o: kernel/scheduler.c | $(BUILD)
 	$(CC) $(CFLAGS) -c $< -o $@
 $(BUILD)/kernel.elf: $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) -o $@

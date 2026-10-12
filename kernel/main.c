@@ -5,6 +5,7 @@
 #include "timer.h"
 #include "memory.h"
 #include "heap.h"
+#include "scheduler.h"
 void kernel_main(void)
 {
     uart_puts("\r\n");
@@ -26,6 +27,8 @@ void kernel_main(void)
 );
 
 uart_puts("Kernel heap initialized.\r\n");
+    scheduler_init();
+uart_puts("Scheduler initialized.\r\n");
     __asm__ volatile("msr daifclr, #2");
     uart_puts("Interrupts enabled.\r\n");
     shell_run();
