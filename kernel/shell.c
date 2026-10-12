@@ -42,13 +42,20 @@ static void task_a(void)
     unsigned long last_tick = timer_get_ticks();
 
     while (1) {
-        if (timer_get_ticks() - last_tick >= 50) {
-            uart_puts("[TASK A]\r\n");
 
-            last_tick = timer_get_ticks();
+        unsigned long now =
+            timer_get_ticks();
 
-            scheduler_yield();
+        if (now - last_tick >= 100) {
+
+            uart_puts("[TASK A running]\r\n");
+
+            last_tick = now;
         }
+
+        /*
+         * NO scheduler_yield()
+         */
     }
 }
 
@@ -57,13 +64,20 @@ static void task_b(void)
     unsigned long last_tick = timer_get_ticks();
 
     while (1) {
-        if (timer_get_ticks() - last_tick >= 50) {
-            uart_puts("[TASK B]\r\n");
 
-            last_tick = timer_get_ticks();
+        unsigned long now =
+            timer_get_ticks();
 
-            scheduler_yield();
+        if (now - last_tick >= 100) {
+
+            uart_puts("[TASK B running]\r\n");
+
+            last_tick = now;
         }
+
+        /*
+         * NO scheduler_yield()
+         */
     }
 }
 static void execute_command(const char *command)
@@ -208,7 +222,7 @@ else if (str_equal(command, "sched")) {
         return;
     }
 
-    uart_puts("Starting cooperative scheduler...\r\n");
+    uart_puts("Starting preemptive scheduler...\r\n");
 
     scheduler_start();
 }

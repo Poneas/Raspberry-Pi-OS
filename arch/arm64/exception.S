@@ -106,10 +106,17 @@ exception_from_el2:
     b exception_panic
 irq_entry:
     /*
-     * Save general purpose registers.
-     * Stack must remain 16-byte aligned.
+     * IRQ stack frame:
+     *
+     * 0   - 247 : x0-x30
+     * 248 - 255 : padding
+     * 256       : ELR_EL1
+     * 264       : SPSR_EL1
+     *
+     * Total: 272 bytes
      */
-    sub sp, sp, #256
+
+    sub sp, sp, #272
 
     stp x0,  x1,  [sp, #0]
     stp x2,  x3,  [sp, #16]
@@ -126,9 +133,40 @@ irq_entry:
     stp x24, x25, [sp, #192]
     stp x26, x27, [sp, #208]
     stp x28, x29, [sp, #224]
-    str x30,      [sp, #240]
 
+    str x30, [sp, #240]
+
+    /*
+     * Save exception return state.
+     */
+    mrs x0, ELR_EL1
+    str x0, [sp, #256]
+
+    mrs x0, SPSR_EL1
+    str x0, [sp, #264]
+
+    /*
+     * Pass current IRQ frame to C.
+     *
+     * irq_handler() returns the stack frame
+     * that should run next.
+     */
+    mov x0, sp
     bl irq_handler
+
+    /*
+     * x0 may point to another task's stack.
+     */
+    mov sp, x0
+
+    /*
+     * Restore selected task's exception state.
+     */
+    ldr x1, [sp, #256]
+    msr ELR_EL1, x1
+
+    ldr x1, [sp, #264]
+    msr SPSR_EL1, x1
 
     ldp x0,  x1,  [sp, #0]
     ldp x2,  x3,  [sp, #16]
@@ -145,8 +183,9 @@ irq_entry:
     ldp x24, x25, [sp, #192]
     ldp x26, x27, [sp, #208]
     ldp x28, x29, [sp, #224]
-    ldr x30,      [sp, #240]
 
-    add sp, sp, #256
+    ldr x30, [sp, #240]
+
+    add sp, sp, #272
 
     eret
